@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>markdown in the browser</title>
+  <link rel="stylesheet" href="./highlight.css">
+  <link rel="stylesheet" href="./mytable.css">
+  <link href="./style.css" rel="stylesheet" type="text/css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/styles/atom-one-dark.min.css"> -->
+  <script src="./jQuery.js"></script>
+  <script src="./hightlight.js"></script>
+  <script src="./markdown-it.js"></script>
+  <script src="./mermaid.js"></script>
+  <style>
+    .md_source {
+      display: none
+    }
+  </style>
+
+</head>
+<body>
+<textarea id="input"  style="height:300px; width: 1200px; margin: 0px;" type="text" oninput="OnInput (event)" onpropertychange="OnPropChanged (event)" value="Text field"></textarea >
+
+<pre class="md_source">
+</pre>
+<div><button onClick="mmd()">一键复制</button></div>
+<div class="mermaid">
+  graph LR
+  A[Markdown-chaos]
+</div>
+
+<div class="md_render" id="markdown">
+</div>
+<script>
+  function OnInput(event) {
+    var md;
+    var defaults = {
+      html: false,
+      xhtmlOut: false,
+      breaks: false,
+      langPrefix: 'language-',
+      linkify: true,
+      typographer: true,
+      _highlight: true,
+      _strict: false,
+      _view: 'html'
+    };
+
+    defaults.highlight = function (str, lang) {
+      var esc = md.utils.escapeHtml;
+      console.log(str)
+      console.log(lang)
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return '<pre class="hljs"><code>' +
+            hljs.highlight(lang, str, true).value +
+            '</code></pre>';
+        } catch (__) { }
+      } else if (lang == 'mermaid') {
+        return mermaidChart(str)
+      } else {
+        return '<pre class="hljs"><code>' + esc(str) + '</code></pre>';
+      }
+    };
+    const mermaidChart = (code) => {
+      try {
+        return `<div class="mermaid">${code}</div>`
+      } catch ({ str, hash }) {
+        return `<pre>${str}</pre>`
+      }
+    }
+    console.log(typeof event.target.value);
+    var a = $('.md_source').html(event.target.value)
+    console.log(a[0].childNodes[0].nodeValue)
+    var b = a[0].childNodes[0].nodeValue
+    // 这里用的是传值，把输入框的值传到这里，我也不知道怎么出来的。这不重要
+    md = window.markdownit(defaults);
+    md.validateLink = function () { return true; }
+    html = md.render(b);
+    $('.md_render').html(html);
+    console.log(html)
+    mermaid.initialize({ startOnLoad: true });
+  }
+</script>
+</script>
+</body>
+<script>
+  function mmd() {
+    var val = document.getElementById("markdown");
+    window.getSelection().selectAllChildren(val);
+    document.execCommand("Copy");
+  }
+</script>
+</html>
